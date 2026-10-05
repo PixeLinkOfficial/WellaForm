@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>نظام إدارة الموظفين والمستندات - شركة ويلا</title>
+  <!-- Bootstrap RTL CDN -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css">
+  <!-- FontAwesome CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- ExcelJS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.3.0/dist/exceljs.min.js"></script>
+  <!-- FileSaver CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+  <!-- JSZip CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+
+  <style>
+    :root {
+      --wella-blue: #173359;
+      --wella-blue-hover: #0f2440;
+      --wella-yellow: #f5d130;
+      --wella-bg: #fbf8f2;
+      --wella-card-bg: #ffffff;
+      --wella-text-dark: #2b2b2b;
+      --wella-border: #e2ded7;
+    }
+
+    body {
+      background-color: var(--wella-bg);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--wella-text-dark);
+      padding-bottom: 60px;
+    }
+
+    /* Site Header matching Wella Theme */
+    .wella-header {
+      background-color: #ffffff;
+      border-bottom: 1px solid var(--wella-border);
+      padding: 20px 0;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.03);
+    }
+    .wella-title-text h2 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--wella-blue);
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+    .wella-title-text h3 {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #111;
+      margin-top: 4px;
+      margin-bottom: 0;
+    }
+    .wella-logo-img {
+      max-height: 75px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .card {
+      border: 1px solid var(--wella-border);
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(23, 51, 89, 0.05);
+      background-color: var(--wella-card-bg);
+      margin-top: 25px;
+    }
+    .card-header {
+      background-color: var(--wella-blue);
+      color: white;
+      border-top-left-radius: 11px !important;
+      border-top-right-radius: 11px !important;
+      padding: 18px 25px;
+      border-bottom: none;
+    }
+    .form-label {
+      font-weight: 600;
+      color: #333;
+      margin-bottom: 6px;
+      font-size: 0.93rem;
+    }
+    .form-control, .form-select {
+      border-color: #d1cbc1;
+      padding: 10px 14px;
+      border-radius: 8px;
+    }
+    .form-control:focus, .form-select:focus {
+      border-color: var(--wella-blue);
+      box-shadow: 0 0 0 0.25rem rgba(23, 51, 89, 0.15);
+    }
+    .color-preview-badge {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+    .btn-custom {
+      background-color: var(--wella-blue);
+      color: #ffffff;
+      font-weight: 700;
+      padding: 14px 35px;
+      border-radius: 8px;
+      border: none;
+      transition: all 0.3s ease;
+    }
+    .btn-custom:hover {
+      background-color: var(--wella-blue-hover);
+      color: #ffffff;
+      box-shadow: 0 6px 16px rgba(23, 51, 89, 0.25);
+    }
+    .file-upload-wrapper {
+      background-color: #f5f1e8;
+      border: 2px dashed #c2b9aa;
+      border-radius: 10px;
+      padding: 22px;
+      text-align: center;
+      margin-bottom: 25px;
+    }
+    .word-upload-box {
+      background-color: #fdfbf7;
+      border: 1px dashed var(--wella-blue);
+      border-radius: 8px;
+      padding: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Wella Theme Header -->
+<header class="wella-header">
+  <div class="container d-flex justify-content-between align-items-center">
+    <!-- Top Left Text -->
+    <div class="wella-title-text text-start">
+      <h2>WELLA Company for General Trading</h2>
+      <h3>شركة ويلا للتجارة العامة</h3>
+    </div>
+    <!-- Top Right Logo -->
+    <div>
+      <img src="imgs/logo.jpeg" alt="Wella Logo" class="wella-logo-img">
+    </div>
+  </div>
+</header>
+
+<div class="container my-4">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+      
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="mb-0 fw-bold"><i class="fa-solid fa-user-plus me-2"></i> إضافة موظف جديد وتحديث Excel والمستندات</h5>
+          <span class="badge bg-white text-dark px-3 py-2 fw-semibold">ورقة: الموظفين الشركة</span>
+        </div>
+        <div class="card-body p-4">
+
+          <!-- Excel File Input Area -->
+          <div class="file-upload-wrapper">
+            <i class="fa-solid fa-file-excel fa-3x text-success mb-2"></i>
+            <h5 class="fw-bold">قم بتحميل ملف Excel الخاص بالموظفين</h5>
+            <p class="text-muted small mb-2">اختر الملف الأصلي للشركة لضمان الحفاظ الكامل على الألوان والتنسيقات</p>
+            <input type="file" id="excelFileInput" class="form-control mt-2" accept=".xlsx, .xls">
+            <div id="fileStatus" class="mt-2 text-success fw-bold" style="display:none;">
+              <i class="fa-solid fa-check-circle"></i> تم تحميل ملف Excel بنجاح!
+            </div>
+          </div>
+
+          <!-- Word Documents Upload Area -->
+          <div class="mb-4">
+            <h5 class="fw-bold mb-3" style="color: var(--wella-blue);"><i class="fa-solid fa-file-word me-2"></i> رفع مستندات Word المراد تعديلها (.docx)</h5>
+            <div class="row g-3">
+              <!-- Upload Doc 1 -->
+              <div class="col-md-4">
+                <div class="word-upload-box">
+                  <label for="docx1Input" class="form-label fw-bold" style="color: var(--wella-blue);"><i class="fa-regular fa-file-word me-1"></i> عقد عمل</label>
+                  <input type="file" id="docx1Input" class="form-control" accept=".docx">
+                </div>
+              </div>
+
+              <!-- Upload Doc 2 -->
+              <div class="col-md-4">
+                <div class="word-upload-box">
+                  <label for="docx2Input" class="form-label fw-bold" style="color: var(--wella-blue);"><i class="fa-regular fa-file-word me-1"></i> عقد سياسات الشركة</label>
+                  <input type="file" id="docx2Input" class="form-control" accept=".docx">
+                </div>
+              </div>
+
+              <!-- Upload Doc 3 -->
+              <div class="col-md-4">
+                <div class="word-upload-box">
+                  <label for="docx3Input" class="form-label fw-bold" style="color: var(--wella-blue);"><i class="fa-regular fa-file-word me-1"></i> سرية معلومات الشركة</label>
+                  <input type="file" id="docx3Input" class="form-control" accept=".docx">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <hr class="my-4" style="border-color: var(--wella-border);">
+
+          <!-- Form Area -->
+          <form id="addEmployeeForm" onsubmit="handleFormSubmit(event)">
+            
+            <div class="row g-3 mb-3">
+              <!-- Full Name -->
+              <div class="col-md-6">
+                <label for="fullName" class="form-label">الاسم الكامل <span class="text-danger">*</span></label>
+                <input type="text" id="fullName" class="form-control" required placeholder="أدخل الاسم الكامل">
+              </div>
+              
+              <!-- Nationality -->
+              <div class="col-md-6">
+                <label for="nationality" class="form-label">الجنسية</label>
+                <input type="text" id="nationality" class="form-control" value="عيراقي" required>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <!-- National ID -->
+              <div class="col-md-4">
+                <label for="nationalId" class="form-label">رقم الهوية / البطاقة الوطنية</label>
+                <input type="text" id="nationalId" class="form-control" placeholder="199820415376">
+              </div>
+
+              <!-- Address -->
+              <div class="col-md-4">
+                <label for="address" class="form-label">العنوان</label>
+                <input type="text" id="address" class="form-control" placeholder="زاخو / سميل / دهوك">
+              </div>
+
+              <!-- Date of Birth -->
+              <div class="col-md-4">
+                <label for="dob" class="form-label">تاريخ الميلاد</label>
+                <input type="date" id="dob" class="form-control" required>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <!-- Phone Number -->
+              <div class="col-md-4">
+                <label for="phoneNumber" class="form-label">رقم الهاتف</label>
+                <input type="text" id="phoneNumber" class="form-control" placeholder="07508489816">
+              </div>
+
+              <!-- Department / Unit -->
+              <div class="col-md-4">
+                <label for="deptUnit" class="form-label">القسم / الوحدة</label>
+                <input type="text" id="deptUnit" class="form-control" placeholder="الشركة / المشروع / ...">
+              </div>
+
+              <!-- Position Name -->
+              <div class="col-md-4">
+                <label for="positionName" class="form-label">المسمى الوظيفي</label>
+                <input type="text" id="positionName" class="form-control" placeholder="مساعد مشغل الآلة">
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <!-- Category / Section Selection -->
+              <div class="col-md-6">
+                <label for="sectionCategory" class="form-label">جهة التبعية / القسم الرئيسي <span class="text-danger">*</span></label>
+                <select id="sectionCategory" class="form-select" onchange="updateColorPreview()" required>
+                  <option value="شركة">شركة (أبيض)</option>
+                  <option value="حرس">حرس (رمادي)</option>
+                  <option value="ااوفيس زاخو">ااوفيس زاخو (أزرق فاتح)</option>
+                  <option value="كاتب">كاتب (برتقالي بني)</option>
+                  <option value="مشروع">مشروع (أخضر فاتح)</option>
+                  <option value="خدمة">خدمة (أزرق)</option>
+                  <option value="معمل تايت">معمل تايت (بني بني فاتح)</option>
+                  <option value="معمل كلينكس">معمل كلينكس (أزرق فاتح جداً)</option>
+                </select>
+                <div class="mt-1 small">
+                  <span id="colorBadge" class="color-preview-badge" style="background-color: #FFFFFF;"></span>
+                  <span id="colorNameText" class="text-muted">اللون التلقائي المطبق على الموظف</span>
+                </div>
+              </div>
+
+              <!-- Date of Employment -->
+              <div class="col-md-3">
+                <label for="employmentDate" class="form-label">تاريخ التعيين</label>
+                <input type="date" id="employmentDate" class="form-control" required>
+              </div>
+
+              <!-- Salary -->
+              <div class="col-md-3">
+                <label for="salary" class="form-label">الراتب الأساسي <span class="text-muted fs-7">(د.ع.)</span></label>
+                <input type="number" id="salary" class="form-control" placeholder="600000" step="1000" required>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <!-- Direct Manager -->
+              <div class="col-md-12">
+                <label for="managerName" class="form-label">المدير المباشر</label>
+                <input type="text" id="managerName" class="form-control" value="فرنسيس يوسف" required>
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <!-- Emergency Contact 1 -->
+              <div class="col-md-6">
+                <label for="emerg1Name" class="form-label">طوارئ 1 (الاسم وصلة القرابة)</label>
+                <input type="text" id="emerg1Name" class="form-control" placeholder="الأخ (نوزاد)">
+              </div>
+              <div class="col-md-6">
+                <label for="emerg1Phone" class="form-label">رقم هاتف طوارئ 1</label>
+                <input type="text" id="emerg1Phone" class="form-control" placeholder="7504564031">
+              </div>
+            </div>
+
+            <div class="row g-3 mb-3">
+              <!-- Emergency Contact 2 -->
+              <div class="col-md-6">
+                <label for="emerg2Name" class="form-label">طوارئ 2 (الاسم وصلة القرابة)</label>
+                <input type="text" id="emerg2Name" class="form-control" placeholder="الأخ (ازاد)">
+              </div>
+              <div class="col-md-6">
+                <label for="emerg2Phone" class="form-label">رقم هاتف طوارئ 2</label>
+                <input type="text" id="emerg2Phone" class="form-control" placeholder="7504515982">
+              </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-4">
+              <label for="notes" class="form-label">ملاحظات</label>
+              <textarea id="notes" class="form-control" rows="2" placeholder="ملاحظات إضافية..."></textarea>
+            </div>
+
+            <!-- Download Button -->
+            <div class="text-center">
+              <button type="submit" id="submitBtn" class="btn btn-custom btn-lg">
+                <i class="fa-solid fa-file-export me-2"></i> إدراج الموظف وتنزيل جميع الملفات
+              </button>
+            </div>
+
+          </form>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  let excelBuffer = null;
+  let originalFileName = "Updated_Data_of_employee.xlsx";
+
+  const sectionColors = {
+    "شركة": "#FFFFFF",
+    "حرس": "#D8D8D8",
+    "ااوفيس زاخو": "#95B3D7",
+    "كاتب": "#B2B1A8",
+    "مشروع": "#EBF1DD",
+    "خدمة": "#00B0F0",
+    "معمل تايت": "#D6D4CA",
+    "معمل كلينكس": "#DBE5F1"
+  };
+
+  function updateColorPreview() {
+    const section = document.getElementById('sectionCategory').value;
+    const color = sectionColors[section] || "#FFFFFF";
+    document.getElementById('colorBadge').style.backgroundColor = color;
+  }
+
+  document.getElementById('excelFileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    originalFileName = "Updated_" + file.name;
+    const reader = new FileReader();
+
+    reader.onload = function(evt) {
+      excelBuffer = evt.target.result;
+      document.getElementById('fileStatus').style.display = 'block';
+    };
+
+    reader.readAsArrayBuffer(file);
+  });
+
+  function calculateThreeMonthsLater(startDateStr) {
+    if (!startDateStr) return { formattedStart: "26-9-2026", formattedEnd: "26 -12-2026" };
+    
+    const [year, month, day] = startDateStr.split('-').map(Number);
+    const startDate = new Date(year, month - 1, day);
+    
+    const endDate = new Date(year, month - 1 + 3, day);
+
+    const startFormatted = `${startDate.getDate()}-${startDate.getMonth() + 1}-${startDate.getFullYear()}`;
+    const endFormatted = `${endDate.getDate()} -${endDate.getMonth() + 1}-${endDate.getFullYear()}`;
+
+    return { formattedStart: startFormatted, formattedEnd: endFormatted };
+  }
+
+  // Bulletproof XML text replacer for Arabic Word Templates
+  async function replaceDocxValuesSafe(file, replacements, outputFileName) {
+    const arrayBuffer = await file.arrayBuffer();
+    const zip = await JSZip.loadAsync(arrayBuffer);
+    
+    // 1. Fetch raw XML text
+    let xmlContent = await zip.file("word/document.xml").async("string");
+
+    // 2. Perform direct replacements across the raw XML stream for exact matches
+    for (const [key, val] of Object.entries(replacements)) {
+      if (!key) continue;
+      // Sanitize special XML characters in value
+      const safeVal = String(val)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+
+      // Replace exact match across XML string
+      const regexExact = new RegExp(key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g');
+      xmlContent = xmlContent.replace(regexExact, safeVal);
+    }
+
+    // 3. Parse XML DOM to catch split text runs safely without breaking XML structure
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(xmlContent, "text/xml");
+
+    // Process all paragraphs for split text replacements
+    const paragraphs = xmlDoc.getElementsByTagName("w:p");
+    for (let p = 0; p < paragraphs.length; p++) {
+      let pNode = paragraphs[p];
+      let pText = pNode.textContent;
+
+      for (const [key, val] of Object.entries(replacements)) {
+        if (!key) continue;
+
+        // Clean both string and key from invisible zero-width spaces / non-breaking spaces for matching
+        const cleanPText = pText.replace(/[\u200B-\u200D\uFEFF\u00A0]/g, ' ');
+        const cleanKey = key.replace(/[\u200B-\u200D\uFEFF\u00A0]/g, ' ');
+
+        if (cleanPText.includes(cleanKey)) {
+          const textNodes = pNode.getElementsByTagName("w:t");
+          if (textNodes.length > 0) {
+            // Reconstruct full text
+            let combinedText = "";
+            for (let t = 0; t < textNodes.length; t++) {
+              combinedText += textNodes[t].textContent;
+            }
+
+            // Replace missing values
+            if (combinedText.includes(key) || combinedText.replace(/[\u200B-\u200D\uFEFF\u00A0]/g, ' ').includes(cleanKey)) {
+              let updatedText = combinedText.replaceAll(key, val);
+              
+              // Assign updated text to the first node
+              textNodes[0].textContent = updatedText;
+
+              // Clear remaining text nodes cleanly without removing elements
+              for (let t = 1; t < textNodes.length; t++) {
+                textNodes[t].textContent = "";
+              }
+            }
+          }
+        }
+      }
+    }
+
+    // 4. Serialize back to XML
+    const serializer = new XMLSerializer();
+    const newXmlContent = serializer.serializeToString(xmlDoc);
+
+    // 5. Update ZIP and download
+    zip.file("word/document.xml", newXmlContent);
+    const modifiedBlob = await zip.generateAsync({
+      type: "blob",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    });
+    
+    saveAs(modifiedBlob, outputFileName);
+  }
+
+  async function processDocxFileInput(inputElementId, defaultOutputPrefix, replacements) {
+    const inputElement = document.getElementById(inputElementId);
+    if (!inputElement || !inputElement.files || inputElement.files.length === 0) return;
+
+    const file = inputElement.files[0];
+    const outputName = `${defaultOutputPrefix}_${replacements['أحمد فاضل حسن'] || 'الموظف'}.docx`;
+    
+    await replaceDocxValuesSafe(file, replacements, outputName);
+  }
+
+  async function handleFormSubmit(event) {
+    event.preventDefault();
+
+    if (!excelBuffer) {
+      alert("يرجى اختيار وتحميل ملف Excel أولاً!");
+      return;
+    }
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-2"></i> جاري معالجة وتنزيل الملفات...';
+
+    try {
+      // Inputs
+      const fullName = document.getElementById('fullName').value || "";
+      const phone = document.getElementById('phoneNumber').value ? String(document.getElementById('phoneNumber').value) : "";
+      const address = document.getElementById('address').value || "";
+      const nationalId = document.getElementById('nationalId').value ? String(document.getElementById('nationalId').value) : "";
+      const position = document.getElementById('positionName').value || "";
+      const empDate = document.getElementById('employmentDate').value || "";
+      const salaryRaw = document.getElementById('salary').value ? document.getElementById('salary').value.toString() : "0";
+
+      const dates = calculateThreeMonthsLater(empDate);
+
+      // 1. Excel Generation
+      const workbook = new ExcelJS.Workbook();
+      await workbook.xlsx.load(excelBuffer);
+
+      let worksheet = workbook.getWorksheet("الموظفين الشركة") || workbook.worksheets[0];
+      const targetCategory = document.getElementById('sectionCategory').value;
+
+      let sectionStartRow = -1;
+      let sectionEndRow = -1;
+
+      worksheet.eachRow((row, rowNumber) => {
+        const cellVal = row.getCell(18).value; // Column R
+        if (cellVal && String(cellVal).trim() === targetCategory) {
+          if (sectionStartRow === -1) sectionStartRow = rowNumber;
+          sectionEndRow = rowNumber;
+        }
+      });
+
+      let insertAtRow = (sectionStartRow !== -1) ? sectionEndRow + 1 : (worksheet.lastRow ? worksheet.lastRow.number + 1 : 5);
+
+      worksheet.insertRow(insertAtRow, []);
+
+      const templateRowIndex = (sectionEndRow !== -1) ? sectionEndRow : (insertAtRow - 1);
+      const templateRow = worksheet.getRow(templateRowIndex);
+      const newRow = worksheet.getRow(insertAtRow);
+
+      const rawDob = document.getElementById('dob').value;
+      let formattedDob = "";
+      if (rawDob) {
+        const [year, month, day] = rawDob.split('-');
+        formattedDob = `${parseInt(month)}/${parseInt(day)}/${year}`;
+      }
+
+      const rowValues = {
+        1: "",
+        2: fullName,
+        3: document.getElementById('nationality').value || "عيراقي",
+        4: nationalId,
+        5: address,
+        6: formattedDob,
+        7: phone,
+        8: document.getElementById('deptUnit').value || "",
+        9: position,
+        10: empDate,
+        11: document.getElementById('salary').value ? parseFloat(document.getElementById('salary').value) : 0,
+        12: document.getElementById('managerName').value || "فرنسيس يوسف",
+        13: document.getElementById('emerg1Name').value || "",
+        14: document.getElementById('emerg1Phone').value ? String(document.getElementById('emerg1Phone').value) : "",
+        15: document.getElementById('emerg2Name').value || "",
+        16: document.getElementById('emerg2Phone').value ? String(document.getElementById('emerg2Phone').value) : "",
+        17: document.getElementById('notes').value || ""
+      };
+
+      for (let c = 1; c <= 17; c++) {
+        const cell = newRow.getCell(c);
+        const templateCell = templateRow.getCell(c);
+
+        cell.value = rowValues[c];
+
+        if (templateCell.fill) cell.fill = templateCell.fill;
+        if (templateCell.font) cell.font = templateCell.font;
+        if (templateCell.alignment) cell.alignment = templateCell.alignment;
+        if (templateCell.border) cell.border = templateCell.border;
+
+        if (c === 11) {
+          cell.numFmt = '_-* #,##0.00 "د.ع."_-;\\-* #,##0.00 "د.ع."_-;_-* "-"?? "د.ع."_-;_-@_-';
+        } else if (c === 4 || c === 7 || c === 14 || c === 16) {
+          cell.numFmt = '@';
+        }
+      }
+
+      let seq = 1;
+      for (let r = 5; r <= worksheet.lastRow.number; r++) {
+        const row = worksheet.getRow(r);
+        const nameVal = row.getCell(2).value;
+        if (nameVal && String(nameVal).trim() !== "") {
+          row.getCell(1).value = seq++;
+        }
+      }
+
+      const buffer = await workbook.xlsx.writeBuffer();
+      const excelBlob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+      saveAs(excelBlob, originalFileName);
+
+      // 2. Comprehensive Word Replacements Dictionary
+      const replacements = {
+        "أحمد فاضل حسن": fullName,
+        "199820415376": nationalId,
+        "07508489816": phone,
+        "مساعد مشغل الآلة": position,
+        "26-9-2026": dates.formattedStart,
+        "26 -12-2026": dates.formattedEnd,
+        "600000": salaryRaw
+      };
+
+      if (address) {
+        replacements["سميل"] = address;
+      }
+
+      // Process Word Documents
+      await processDocxFileInput("docx1Input", "عقد_عمل", replacements);
+      await processDocxFileInput("docx2Input", "عقد_سياسات_الشركة", replacements);
+      await processDocxFileInput("docx3Input", "سرية_معلومات_الشركة", replacements);
+
+      alert("تم إدراج الموظف وتحديث ملفات Word بنجاح مع فتح الملفات بشكل سليم!");
+    } catch (err) {
+      console.error(err);
+      alert("حدث خطأ أثناء معالجة الملفات: " + err.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fa-solid fa-file-export me-2"></i> إدراج الموظف وتنزيل جميع الملفات';
+    }
+  }
+
+  updateColorPreview();
+</script>
+
+</body>
+</html>
