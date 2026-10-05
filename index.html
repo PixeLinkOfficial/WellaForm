@@ -259,7 +259,7 @@
 
             <div class="row g-3 mb-3">
               <!-- Category / Section Selection -->
-              <div class="col-md-6">
+              <div class="col-md-3">
                 <label for="sectionCategory" class="form-label">جهة التبعية / القسم الرئيسي <span class="text-danger">*</span></label>
                 <select id="sectionCategory" class="form-select" onchange="updateColorPreview()" required>
                   <option value="شركة">شركة (أبيض)</option>
@@ -273,7 +273,7 @@
                 </select>
                 <div class="mt-1 small">
                   <span id="colorBadge" class="color-preview-badge" style="background-color: #FFFFFF;"></span>
-                  <span id="colorNameText" class="text-muted">اللون التلقائي المطبق على الموظف</span>
+                  <span id="colorNameText" class="text-muted">اللون التلقائي المطبق</span>
                 </div>
               </div>
 
@@ -281,6 +281,12 @@
               <div class="col-md-3">
                 <label for="employmentDate" class="form-label">تاريخ التعيين</label>
                 <input type="date" id="employmentDate" class="form-control" required>
+              </div>
+
+              <!-- Contract End Date (For Word Documents Only) -->
+              <div class="col-md-3">
+                <label for="contractEndDate" class="form-label">تاريخ انتهاء العقد <span class="text-muted fs-7">(مستندات Word)</span></label>
+                <input type="date" id="contractEndDate" class="form-control">
               </div>
 
               <!-- Salary -->
@@ -394,6 +400,12 @@
     return { formattedStart: startFormatted, formattedEnd: endFormatted };
   }
 
+  function formatInputDate(dateStr) {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split('-').map(Number);
+    return `${day}-${month}-${year}`;
+  }
+
   // Bulletproof XML text replacer for Arabic Word Templates
   async function replaceDocxValuesSafe(file, replacements, outputFileName) {
     const arrayBuffer = await file.arrayBuffer();
@@ -478,7 +490,7 @@
     if (!inputElement || !inputElement.files || inputElement.files.length === 0) return;
 
     const file = inputElement.files[0];
-    const outputName = `${defaultOutputPrefix}_${replacements['أحمد فاضل حسن'] || 'الموظف'}.docx`;
+    const outputName = `${defaultOutputPrefix}_${replacements['(full name)'] || 'الموظف'}.docx`;
     
     await replaceDocxValuesSafe(file, replacements, outputName);
   }
@@ -503,9 +515,11 @@
       const nationalId = document.getElementById('nationalId').value ? String(document.getElementById('nationalId').value) : "";
       const position = document.getElementById('positionName').value || "";
       const empDate = document.getElementById('employmentDate').value || "";
+      const customEndDate = document.getElementById('contractEndDate').value || "";
       const salaryRaw = document.getElementById('salary').value ? document.getElementById('salary').value.toString() : "0";
 
       const dates = calculateThreeMonthsLater(empDate);
+      const finalEndDate = customEndDate ? formatInputDate(customEndDate) : dates.formattedEnd;
 
       // 1. Excel Generation
       const workbook = new ExcelJS.Workbook();
@@ -598,7 +612,7 @@
         "(phone number)": phone,
         "(position)": position,
         "(start-date)": dates.formattedStart,
-        "(end-date)": dates.formattedEnd,
+        "(end-date)": finalEndDate,
         "(salary)": salaryRaw
       };
 
