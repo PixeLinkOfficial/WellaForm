@@ -593,17 +593,17 @@
 
       // 2. Comprehensive Word Replacements Dictionary
       const replacements = {
-        "أحمد فاضل حسن": fullName,
-        "199820415376": nationalId,
-        "07508489816": phone,
-        "مساعد مشغل الآلة": position,
-        "26-9-2026": dates.formattedStart,
-        "26 -12-2026": dates.formattedEnd,
-        "600000": salaryRaw
+        "(full name)": fullName,
+        "(id number)": nationalId,
+        "(phone number)": phone,
+        "(position)": position,
+        "(start-date)": dates.formattedStart,
+        "(end-date)": dates.formattedEnd,
+        "(salary)": salaryRaw
       };
 
       if (address) {
-        replacements["سميل"] = address;
+        replacements["(address)"] = address;
       }
 
       // Process Word Documents
